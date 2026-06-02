@@ -1,4 +1,5 @@
 import pcbnew
+import wx
 import os
 
 
@@ -40,13 +41,16 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
             if isinstance(item, pcbnew.PCB_TRACK):
                 tracks += 1
 
-                layer_name = item.GetLayerName()
+                try:
+                    layer_name = item.GetLayerName()
 
-                if layer_name == "F.Cu":
-                    top_tracks += 1
+                    if layer_name == "F.Cu":
+                        top_tracks += 1
 
-                elif layer_name == "B.Cu":
-                    bottom_tracks += 1
+                    elif layer_name == "B.Cu":
+                        bottom_tracks += 1
+                except:
+                    pass
 
             if isinstance(item, pcbnew.PCB_VIA):
                 vias += 1
@@ -60,12 +64,39 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
         for i in range(len(all_tracks)):
             for j in range(i + 1, len(all_tracks)):
 
-                if all_tracks[i].GetStart() == all_tracks[j].GetStart():
-                    overlaps += 1
+                try:
+                    if all_tracks[i].GetStart() == all_tracks[j].GetStart():
+                        overlaps += 1
+                except:
+                    pass
 
-        footprints = len(board.GetFootprints())
-
+        footprints = len(list(board.GetFootprints()))
         copper_layers = board.GetCopperLayerCount()
+
+        # NET ANALYSIS
+        total_nets = 0
+
+        try:
+            nets = board.GetNetsByName()
+            total_nets = len(nets)
+        except:
+            pass
+
+        # COMPONENT ANALYSIS
+        total_components = footprints
+
+        top_components = 0
+        bottom_components = 0
+
+        for fp in board.GetFootprints():
+
+            try:
+                if fp.GetLayerName() == "F.Cu":
+                    top_components += 1
+                else:
+                    bottom_components += 1
+            except:
+                pass
 
         health_score = self.calculate_health_score(
             tracks,
@@ -88,7 +119,7 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
       PCB HEALTH REPORT
 ================================
 
-Board File :
+Board File:
 {board.GetFileName()}
 
 -------------------------------
@@ -106,6 +137,20 @@ LAYER STATISTICS
 
 Top Layer Tracks   : {top_tracks}
 Bottom Layer Tracks: {bottom_tracks}
+
+-------------------------------
+NET ANALYSIS
+-------------------------------
+
+Total Nets         : {total_nets}
+
+-------------------------------
+COMPONENT ANALYSIS
+-------------------------------
+
+Total Components   : {total_components}
+Top Components     : {top_components}
+Bottom Components  : {bottom_components}
 
 -------------------------------
 DRC SUMMARY
@@ -126,8 +171,6 @@ Analysis Complete
 ================================
 """
 
-        print(report)
-
         report_path = os.path.join(
             os.path.dirname(board.GetFileName()),
             "pcb_health_report.txt"
@@ -136,11 +179,11 @@ Analysis Complete
         with open(report_path, "w") as f:
             f.write(report)
 
-        pcbnew.wxMessageBox(
+        wx.MessageBox(
             f"PCB Health Report Generated Successfully!\n\n"
             f"Health Score: {health_score}/100\n"
             f"Status: {board_status}\n\n"
-            f"Saved at:\n{report_path}",
+            f"Report saved as:\npcb_health_report.txt",
             "OPCB Health Analyzer"
         )
 
@@ -149,7 +192,7 @@ Analysis Complete
         board = pcbnew.GetBoard()
 
         if board is None:
-            pcbnew.wxMessageBox(
+            wx.MessageBox(
                 "No PCB Board Opened!",
                 "OPCB Health Analyzer"
             )

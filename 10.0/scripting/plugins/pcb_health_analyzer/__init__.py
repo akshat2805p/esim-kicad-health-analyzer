@@ -1,1 +1,3 @@
-from .drc_summary import DRCSummary
+from .health_analyzer import OPCBHealthAnalyzer
+
+OPCBHealthAnalyzer().register()
