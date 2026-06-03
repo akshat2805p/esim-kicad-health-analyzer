@@ -505,25 +505,6 @@ git commit -m "feat: add new PCB analysis feature"
 # Push and create PR
 git push origin feature/add-new-analysis
 ```
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** - see [LICENSE](./LICENSE) file for details.
-
-**Original Work:** FOSSEE eSim Project Contributors  
-**Maintained by:** [Akshat Pandey](https://github.com/akshat2805p)
-
----
-
-## 🙏 Acknowledgments
-
-- **FOSSEE** for project sponsorship and guidance
-- **KiCad Community** for excellent API documentation
-- **Contributors** for feedback and improvements
-- **EDA Designers** using these tools in production workflows
-
 ---
 
 ## 📞 Support & Contact
@@ -553,4 +534,3 @@ This project is licensed under the **MIT License** - see [LICENSE](./LICENSE) fi
 ---
 
 **Last Updated:** June 2026  
-**Repository:** [github.com/akshat2805p/esim-kicad-health-analyzer](https://github.com/akshat2805p/esim-kicad-health-analyzer)
