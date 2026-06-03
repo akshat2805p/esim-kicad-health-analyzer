@@ -1,380 +1,556 @@
-# FOSSEE eSim Open Source Contributions
+# eSim KiCad Health Analyzer
 
-This repository contains development tasks, automation utilities, scripting modules, and PCB workflow tooling implemented during my internship contribution work under :contentReference[oaicite:0]{index=0} at :contentReference[oaicite:1]{index=1}.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python: 3.7+](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/)
+[![KiCad: 6.0+](https://img.shields.io/badge/KiCad-6.0+-red.svg)](https://www.kicad.org/)
 
-The work primarily focuses on:
-- KiCad Python API integration
-- PCB automation tooling
-- Plugin development
-- Data analysis utilities
-- Report generation systems
-- Open-source workflow practices
+A comprehensive suite of Python-based KiCad automation plugins and utilities developed for the **FOSSEE eSim** project. This repository contains production-ready tools for PCB analysis, design validation, and report generation integrated with KiCad 10.0's Python API ecosystem.
+
+**Repository Owner:** [akshat2805p](https://github.com/akshat2805p)  
+**For:** FOSSEE eSim Open Source Contributions
 
 ---
 
-# Repository Structure
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Quick Start](#quick-start)
+- [Modules & Tools](#modules--tools)
+- [Installation](#installation)
+- [Usage Examples](#usage-examples)
+- [Architecture](#architecture)
+- [Technologies](#technologies)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## 🎯 Overview
+
+This repository provides a complete ecosystem of KiCad plugins and Python utilities for automating PCB design workflows. The tools enable engineers to:
+
+✅ Analyze PCB health and design quality  
+✅ Generate comprehensive inspection reports  
+✅ Detect design rule violations  
+✅ Automate component verification  
+✅ Create formatted design documentation  
+
+All modules are designed to integrate seamlessly with KiCad 6.0+ and leverage the `pcbnew` Python API for native board manipulation.
+
+---
+
+## ⚡ Quick Start
+
+### Installation
 
 ```bash
-FOSSEE-eSim-Tasks/
-│
-├── hello_fossee_plugin/
-│   ├── plugin.py
-│   └── README.md
-│
-├── pcb_statistics/
-│   ├── main.py
-│   ├── pcb_stats.py
-│   └── README.md
-│
-├── pcb_report_generator/
-│   ├── main.py
-│   ├── analyzer.py
-│   ├── report_writer.py
-│   ├── sample_data.txt
-│   ├── report.txt
-│   └── README.md
-│
-└── README.md
+# Clone the repository
+git clone https://github.com/akshat2805p/esim-kicad-health-analyzer.git
+cd esim-kicad-health-analyzer
+
+# Navigate to KiCad plugins directory
+cd 10.0/scripting/plugins/
+
+# Run any module directly or import for KiCad integration
 ```
 
+### Using as KiCad Plugins
+
+1. **Copy plugins to KiCad directory:**
+   ```bash
+   # Linux/macOS
+   cp -r advanced_pcb_checker/ ~/.local/share/kicad/6.0/scripting/plugins/
+   cp -r pcb_health_analyzer/ ~/.local/share/kicad/6.0/scripting/plugins/
+   
+   # Windows
+   xcopy advanced_pcb_checker\ %APPDATA%\kicad\6.0\scripting\plugins\
+   xcopy pcb_health_analyzer\ %APPDATA%\kicad\6.0\scripting\plugins\
+   ```
+
+2. **Refresh plugins in KiCad:**
+   - Open KiCad PCB Editor
+   - Navigate to: `Tools → External Plugins → Refresh Plugins`
+   - Plugins will appear in the `Tools` menu
+
 ---
 
-# Day 1 — KiCad Python API Integration & Action Plugin Framework
+## 🛠️ Modules & Tools
 
-## Objective
+### 1. **hello_plugin.py** — Basic Plugin Template
+A starter plugin demonstrating KiCad Action Plugin architecture.
 
-Initialize a native scripting workspace using KiCad 10.0's wrapped `pcbnew` Python API and establish the foundation for plugin-based PCB automation workflows.
+**Features:**
+- Simple action registration
+- Menu integration
+- Dialog callback system
+- wxPython GUI integration
+
+**Use Case:** Learning KiCad plugin development fundamentals
+
+**Related Documentation:** [Plugin Architecture Guide](./10.0/scripting/plugins/pcb_health_analyzer/docs/architecture.md)
 
 ---
 
-## Implementation Details
+### 2. **pcb_reader.py** — PCB File Analyzer
+Lightweight utility for parsing and analyzing `.kicad_pcb` files.
 
-### Plugin Architecture
-Developed a Python Action Plugin inheriting from:
+**Features:**
+- PCB file parsing
+- Layer information extraction
+- Track and via analysis
+- Component mapping
 
+**Use Case:** Programmatic PCB metadata extraction for custom analysis pipelines
+
+---
+
+### 3. **advanced_pcb_checker/** — Automated PCB Inspection Plugin
+Advanced plugin for detecting design rule violations and manufacturing issues.
+
+**Key Features:**
+- ✓ Thin track detection (< 0.2mm)
+- ✓ Small via drill detection (< 0.3mm)
+- ✓ Footprints outside board boundary detection
+- ✓ Automatic report generation (TXT format)
+- ✓ Design rule compliance validation
+
+**Output:** `pcb_report.txt` with detailed inspection results
+
+**Directory Structure:**
+```
+advanced_pcb_checker/
+├── __init__.py
+├── advanced_checker.py      # Core inspection logic
+└── Readme.md               # Detailed documentation
+```
+
+**Quick Start:**
 ```python
-pcbnew.ActionPlugin
-```
-
-The plugin architecture included:
-- Metadata initialization
-- Menu registration
-- UI callback integration
-- Native execution support
-
----
-
-## Core Concepts Explored
-
-- KiCad scripting engine
-- `pcbnew` API bindings
-- Plugin lifecycle management
-- Action Plugin registration
-- Internal runtime execution model
-
----
-
-## Technical Challenges & Resolution
-
-### 1. Runtime Namespace Isolation
-
-#### Issue
-The `pcbnew` namespace could not be imported using the system-wide Python interpreter.
-
-#### Root Cause
-KiCad embeds its own isolated Python runtime environment internally.
-
-#### Resolution
-Shifted plugin execution into:
-```bash
-KiCad → PCB Editor → External Plugins
-```
-
-rather than running scripts independently.
-
----
-
-### 2. API Deprecation Handling
-
-#### Issue
-Encountered:
-
-```python
-AttributeError:
-pcbnew.wxMessageBox
-```
-
-#### Resolution
-Replaced deprecated APIs using direct `wxPython` bindings:
-
-```python
-import wx
-wx.MessageBox()
+from advanced_pcb_checker import advanced_checker
+report = advanced_checker.analyze_board(pcb_board)
 ```
 
 ---
 
-## Plugin Verification Workflow
+### 4. **pcb_health_analyzer/** — Comprehensive Health Analysis Tool ⭐ (Recommended)
+The most advanced and feature-rich module. Production-ready plugin for comprehensive PCB design quality assessment.
 
-1. Open KiCad PCB Editor
-2. Navigate to:
+**Key Features:**
+- 📊 **Multi-Metric Analysis**
+  - PCB statistics (tracks, vias, footprints, nets)
+  - Layer distribution analysis
+  - Component placement validation
+  - Copper coverage metrics
 
-```bash
-Tools → External Plugins → Refresh Plugins
+- 🎯 **Design Quality Inspection**
+  - Unconnected pad detection
+  - Track overlap analysis
+  - Component density assessment
+  - Design rule compliance checks
+
+- 📈 **Health Scoring System**
+  - Automated health score (0-100)
+  - Board status classification:
+    - EXCELLENT (90-100)
+    - GOOD (70-90)
+    - NEEDS REVIEW (50-70)
+    - CRITICAL (<50)
+
+- 📄 **Multi-Format Report Generation**
+  - Formatted text reports
+  - JSON data export (`pcb_health_report.json`)
+  - HTML visualization (`pcb_html_report.py`)
+  - Automatic file generation
+
+**Output Examples:**
+- `pcb_health_report.json` — Structured analysis data
+- `pcb_health_report.txt` — Human-readable summary
+- HTML dashboard — Visual health overview
+
+**Directory Structure:**
+```
+pcb_health_analyzer/
+├── __init__.py
+├── health_analyzer.py       # Main plugin entry point
+├── analyzer_core.py         # Core analysis algorithms
+├── drc_summary.py          # Design Rule Checker
+├── gui.py                  # GUI components
+├── report_generator.py     # Report creation logic
+├── pcb_html_report.py      # HTML export functionality
+├── requirements.txt        # Dependencies
+├── Readme.md              # Full documentation
+├── docs/
+│   └── architecture.md     # Technical architecture
+└── pcb_health_report.json  # Sample output
 ```
 
-3. Execute:
-
-```bash
-Hello FOSSEE
-```
-
-4. Native confirmation dialog appears successfully.
-
----
-
-## Skills Gained
-
-- KiCad internal scripting framework
-- Python plugin architecture
-- Runtime debugging
-- API compatibility migration
-- Native GUI integration
-
----
-
-# Day 2 — PCB Statistics Plugin
-
-## Objective
-
-Develop a lightweight PCB component analysis utility capable of generating automated component statistics from PCB datasets.
-
----
-
-## Features
-
-- Counts total PCB components
-- Detects component categories
-- Calculates resistor/capacitor/IC counts
-- Modular architecture implementation
-- Beginner-friendly automation workflow
-
----
-
-## Project Structure
-
-```bash
-pcb_statistics/
-│
-├── main.py
-├── pcb_stats.py
-└── README.md
-```
-
----
-
-## Technologies Used
-
-- Python
-- File Handling
-- Modular Programming
-- PCB Data Processing
-
----
-
-## Output Example
-
+**Dependencies:**
 ```txt
-Total Components: 12
-Resistors: 5
-Capacitors: 3
-ICs: 2
+wxPython >= 4.1.0
+```
+
+**Usage in KiCad:**
+1. Install plugin (see Installation section)
+2. Open PCB in KiCad Editor
+3. Navigate to: `Tools → External Plugins → PCB Health Analyzer`
+4. Review generated reports in project directory
+
+**Programmatic Usage:**
+```python
+from pcb_health_analyzer import health_analyzer
+
+# Initialize analyzer
+analyzer = health_analyzer.HealthAnalyzer(board)
+
+# Run analysis
+results = analyzer.analyze()
+
+# Generate reports
+analyzer.generate_reports(output_dir="./reports/")
 ```
 
 ---
 
-## Learning Outcomes
+### 5. **pcb_report_generator/** — Component Report Generator
+Utility for analyzing component datasets and generating design validation reports.
 
-- Python modularization
-- PCB metadata parsing
-- Structured utility development
-- Open-source repository organization
-
----
-
-# Day 3 — PCB Design Rule Report Generator
-
-## Objective
-
-Create an advanced PCB analysis and report generation utility capable of validating component datasets and generating structured design verification reports.
-
----
-
-## Features
-
-### Component Analysis
-- Total component counting
-- Resistor/capacitor/IC classification
+**Features:**
+- Component counting and classification
 - Duplicate component detection
-- Missing value detection
+- Missing value identification
+- Formatted report generation
+- Data validation
 
-### Automated Reporting
-- Generates formatted report files
-- Creates design validation summaries
-- Produces human-readable PCB audit reports
+**Supported Component Types:**
+- Resistors (R)
+- Capacitors (C)
+- Inductors (L)
+- Integrated Circuits (U)
+- Diodes (D)
+- Custom types
 
----
-
-## Project Structure
-
-```bash
-pcb_report_generator/
-│
-├── main.py
-├── analyzer.py
-├── report_writer.py
-├── sample_data.txt
-├── report.txt
-└── README.md
-```
-
----
-
-## Sample Input
-
-```txt
-R1,Resistor,10k
-R2,Resistor,1k
+**Input Format:**
+```csv
+designator,type,value
 R1,Resistor,10k
 C1,Capacitor,100nF
-C2,Capacitor,10uF
-C3,Capacitor,
 U1,IC,ATmega328
-U2,IC,NE555
+```
+
+**Output Example:**
+```
+╔════════════════════════════════════════╗
+║        PCB DESIGN VERIFICATION         ║
+╚════════════════════════════════════════╝
+
+Total Components: 25
+├─ Resistors: 10
+├─ Capacitors: 8
+├─ ICs: 4
+└─ Others: 3
+
+Quality Issues:
+  ✗ Duplicate Components: 2
+  ✗ Missing Values: 1
+
+Status: REVIEW REQUIRED
+```
+
+**Directory Structure:**
+```
+pcb_report_generator/
+├── __init__.py
+├── main.py              # CLI entry point
+├── analyzer.py          # Component analysis logic
+├── report_writer.py     # Report formatting
+├── sample_data.txt      # Example input
+├── report.txt          # Example output
+└── Readme.md           # Documentation
+```
+
+**Quick Start:**
+```bash
+cd pcb_report_generator
+python main.py --input sample_data.txt --output report.txt
 ```
 
 ---
 
-## Generated Report Example
+## 📦 Installation
 
-```txt
-PCB DESIGN REPORT
-=================
+### System Requirements
 
-Total Components: 8
+- **Python:** 3.7+
+- **KiCad:** 6.0+ (for plugin functionality)
+- **OS:** Linux, macOS, Windows
+- **Dependencies:** See individual module `requirements.txt`
 
-Resistors: 3
-Capacitors: 3
-ICs: 2
+### Setup Options
 
-Duplicate Components:
-- R1
-
-Missing Values:
-- C3
-
-STATUS:
-Design needs review.
-```
-
----
-
-## Architecture Overview
-
-### analyzer.py
-Responsible for:
-- Parsing component entries
-- Performing validations
-- Generating statistics
-
-### report_writer.py
-Responsible for:
-- Formatting report data
-- Writing structured summaries
-- Producing final design reports
-
-### main.py
-Responsible for:
-- Workflow execution
-- File management
-- Pipeline coordination
-
----
-
-## Technical Concepts Applied
-
-- Data validation
-- File parsing
-- Report generation
-- Python dictionaries
-- Modular software architecture
-- Automation workflows
-
----
-
-# Future Development Goals
-
-## Planned Improvements
-
-### KiCad Integration
-- Direct `.kicad_pcb` parsing
-- Native board analysis support
-- Real-time PCB inspection
-
-### GUI Dashboard
-- Interactive statistics viewer
-- Visual report generation
-- Design health indicators
-
-### Advanced DRC Automation
-- Clearance verification
-- Footprint consistency checks
-- Net validation systems
-
-### Export Features
-- CSV reports
-- JSON summaries
-- PDF design audits
-
----
-
-# Open Source Workflow
-
-## Contribution Workflow
+#### Option 1: Direct Module Usage (Recommended for Development)
 
 ```bash
-git add .
-git commit -m "Implemented PCB automation utilities and report generators"
-git push origin main
+# Clone repository
+git clone https://github.com/akshat2805p/esim-kicad-health-analyzer.git
+cd esim-kicad-health-analyzer
+
+# Install dependencies (if any)
+pip install -r 10.0/scripting/plugins/pcb_health_analyzer/requirements.txt
+
+# Import modules in your Python code
+import sys
+sys.path.insert(0, './10.0/scripting/plugins/')
+from pcb_health_analyzer import health_analyzer
+```
+
+#### Option 2: KiCad Integration
+
+```bash
+# Copy plugins to KiCad scripting directory
+# Location varies by OS (see Quick Start section)
+
+# Restart KiCad and refresh plugins
+```
+
+#### Option 3: Development Setup
+
+```bash
+# Clone and create development environment
+git clone https://github.com/akshat2805p/esim-kicad-health-analyzer.git
+cd esim-kicad-health-analyzer
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+# or
+venv\Scripts\activate     # Windows
+
+# Install all dependencies
+pip install -r 10.0/scripting/plugins/pcb_health_analyzer/requirements.txt
 ```
 
 ---
 
-# Skills Developed During Internship
+## 📚 Usage Examples
 
-- Python Development
-- Open Source Contribution Workflow
-- Git & GitHub
-- PCB Automation
-- KiCad Plugin Development
-- Data Parsing
-- Report Generation
-- Debugging & API Migration
-- Modular Software Architecture
+### Example 1: Analyze PCB Health
+
+```python
+#!/usr/bin/env python3
+import sys
+sys.path.insert(0, './10.0/scripting/plugins/')
+
+from pcb_health_analyzer import health_analyzer
+import pcbnew
+
+# Load PCB file
+board = pcbnew.LoadBoard("design.kicad_pcb")
+
+# Create analyzer instance
+analyzer = health_analyzer.HealthAnalyzer(board)
+
+# Run comprehensive analysis
+results = analyzer.analyze()
+
+# Print health score
+print(f"Health Score: {results['health_score']}/100")
+print(f"Status: {results['status']}")
+
+# Generate formatted reports
+analyzer.generate_reports(output_dir="./analysis_reports/")
+```
+
+### Example 2: Detect Design Rule Violations
+
+```python
+from advanced_pcb_checker import advanced_checker
+import pcbnew
+
+board = pcbnew.LoadBoard("design.kicad_pcb")
+
+# Run design checks
+violations = advanced_checker.check_tracks(board, min_width=0.2)
+violations += advanced_checker.check_vias(board, min_drill=0.3)
+violations += advanced_checker.check_boundaries(board)
+
+# Generate report
+advanced_checker.write_report(violations, "inspection_report.txt")
+```
+
+### Example 3: Validate Component Dataset
+
+```python
+from pcb_report_generator import analyzer, report_writer
+
+# Load component data
+components = analyzer.parse_components("bom.txt")
+
+# Analyze
+stats = analyzer.analyze_components(components)
+issues = analyzer.detect_issues(components)
+
+# Generate report
+report_writer.write_report(stats, issues, "component_report.txt")
+```
 
 ---
 
-# Internship Contribution Summary
+## 🏗️ Architecture
 
-This repository represents progressive learning and contribution work focused on:
-- PCB automation tooling
-- KiCad plugin ecosystem exploration
-- Python-based EDA utilities
-- Open-source engineering practices
+### Plugin Execution Flow
 
-The implementation evolved from:
-1. Basic plugin initialization
-2. PCB statistical analysis
-3. Advanced automated report generation systems
+```
+KiCad PCB Editor
+    ↓
+Tools → External Plugins
+    ↓
+Plugin Manager (pcbnew)
+    ↓
+┌─────────────────────────────────────┐
+│   Action Plugin Instance            │
+│  (inherits ActionPlugin)            │
+│  ├─ defaults()    [metadata]        │
+│  ├─ Run()         [main logic]      │
+│  └─ Show Dialog() [UI interaction]  │
+└─────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────┐
+│   Core Analysis Modules             │
+│  ├─ analyzer_core.py                │
+│  ├─ drc_summary.py                  │
+│  └─ report_generator.py             │
+└─────────────────────────────────────┘
+    ↓
+Output Files (JSON, TXT, HTML)
+```
 
-forming the foundation for future integration into larger-scale PCB design automation workflows.
+### Module Dependencies
+
+```
+pcbnew (KiCad Python API)
+    ↓
+pcb_health_analyzer/
+    ├─ health_analyzer.py ← Main entry point
+    ├─ analyzer_core.py   ← Analysis logic
+    ├─ report_generator.py ← Report formatting
+    └─ gui.py ← UI components
+```
+
+### Data Flow
+
+```
+.kicad_pcb File
+    ↓
+[Parser/Analyzer]
+    ↓
+Analysis Results (JSON)
+    ↓
+[Report Generator]
+    ├─ Text Report
+    ├─ JSON Export
+    └─ HTML Dashboard
+```
+
+---
+
+## 🛠️ Technologies
+
+- **Language:** Python 3.7+
+- **KiCad:** 6.0+ / 10.0
+- **APIs:** pcbnew (KiCad Python API), wxPython
+- **Data Formats:** JSON, CSV, TXT, HTML
+- **Version Control:** Git
+- **CI/CD:** GitHub Actions (optional)
+
+---
+
+## 📖 Detailed Module Documentation
+
+Each module includes comprehensive documentation:
+
+- [PCB Health Analyzer Documentation](./10.0/scripting/plugins/pcb_health_analyzer/Readme.md)
+- [Advanced PCB Checker Documentation](./10.0/scripting/plugins/advanced_pcb_checker/Readme.md)
+- [PCB Report Generator Documentation](./10.0/scripting/plugins/pcb_report_generator/Readme.md)
+- [Architecture Reference](./10.0/scripting/plugins/pcb_health_analyzer/docs/architecture.md)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these guidelines:
+
+1. **Fork the repository** on GitHub
+2. **Create a feature branch:** `git checkout -b feature/your-feature`
+3. **Make your changes** with clear commit messages
+4. **Test thoroughly** on KiCad 6.0+ versions
+5. **Submit a Pull Request** with a detailed description
+
+### Development Workflow
+
+```bash
+# Clone your fork
+git clone https://github.com/your-username/esim-kicad-health-analyzer.git
+cd esim-kicad-health-analyzer
+
+# Create feature branch
+git checkout -b feature/add-new-analysis
+
+# Make changes and test
+# ... edit files ...
+
+# Commit with clear messages
+git add .
+git commit -m "feat: add new PCB analysis feature"
+
+# Push and create PR
+git push origin feature/add-new-analysis
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** - see [LICENSE](./LICENSE) file for details.
+
+**Original Work:** FOSSEE eSim Project Contributors  
+**Maintained by:** [Akshat Pandey](https://github.com/akshat2805p)
+
+---
+
+## 🙏 Acknowledgments
+
+- **FOSSEE** for project sponsorship and guidance
+- **KiCad Community** for excellent API documentation
+- **Contributors** for feedback and improvements
+- **EDA Designers** using these tools in production workflows
+
+---
+
+## 📞 Support & Contact
+
+- **GitHub Issues:** [Report bugs or request features](https://github.com/akshat2805p/esim-kicad-health-analyzer/issues)
+- **Discussions:** [Ask questions and share ideas](https://github.com/akshat2805p/esim-kicad-health-analyzer/discussions)
+- **Email:** Open an issue for direct contact
+
+---
+
+## 🚀 Roadmap
+
+### Current Release ✅
+- ✅ Multi-format report generation
+- ✅ Health scoring system
+- ✅ Design rule checking
+- ✅ Component analysis
+
+### Planned Features 📋
+- [ ] Real-time PCB monitoring
+- [ ] Advanced DRC with custom rules
+- [ ] Integration with CI/CD pipelines
+- [ ] Web-based dashboard
+- [ ] Machine learning-based quality prediction
+- [ ] Multi-language support
+
+---
+
+**Last Updated:** June 2026  
+**Repository:** [github.com/akshat2805p/esim-kicad-health-analyzer](https://github.com/akshat2805p/esim-kicad-health-analyzer)
