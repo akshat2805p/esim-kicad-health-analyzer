@@ -276,6 +276,36 @@ python main.py --input sample_data.txt --output report.txt
 
 ---
 
+### 6. **opcb_drc_checker/** — OPCB Design Rule Checker Plugin
+A new KiCad Action Plugin that automatically detects common PCB design issues and generates detailed HTML and TXT reports.
+
+**Key Features:**
+- Minimum Track Width Checker (< 0.2mm default)
+- Via Size Analyzer (< 0.4mm default)
+- Board Dimension Analyzer (width, height, area)
+- Layer Usage Statistics (tracks/vias per copper layer)
+- Automated Multi-Format Report Generator (HTML/TXT)
+
+**Output Examples:**
+- `drc_report.txt`
+- `drc_report.html`
+
+**Directory Structure:**
+```text
+opcb_drc_checker/
+├── __init__.py
+├── opcb_drc_checker.py      # Main plugin logic
+├── report_generator.py      # Text report generator
+└── html_generator.py        # HTML report generator
+```
+
+**Usage in KiCad:**
+1. Open PCB in KiCad Editor
+2. Navigate to: `Tools → External Plugins → OPCB Design Rule Checker`
+3. Check project directory for generated DRC reports.
+
+---
+
 ## 📦 Installation
 
 ### System Requirements
