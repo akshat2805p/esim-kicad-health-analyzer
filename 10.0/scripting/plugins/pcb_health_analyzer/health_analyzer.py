@@ -2,6 +2,7 @@ import pcbnew
 import wx
 import os
 from .pcb_html_report import generate_html_report
+from . import report_generator
 
 
 class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
@@ -44,6 +45,11 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
         unconnected_pads = 0
         overlaps = 0
 
+        thin_tracks = 0
+        small_vias = 0
+        via_types = {pcbnew.VIATYPE_THROUGH: 0, pcbnew.VIATYPE_BLIND_BURIED: 0, pcbnew.VIATYPE_MICROVIA: 0}
+        layer_tracks = {}
+
         track_widths = []
         via_sizes = []
 
@@ -56,9 +62,14 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
                 vias += 1
 
                 try:
-                    via_sizes.append(
-                        round(pcbnew.ToMM(item.GetWidth()), 3)
-                    )
+                    width = round(pcbnew.ToMM(item.GetWidth()), 3)
+                    via_sizes.append(width)
+                    if width < 0.4:
+                        small_vias += 1
+                        
+                    via_type = item.GetViaType()
+                    if via_type in via_types:
+                        via_types[via_type] += 1
                 except:
                     pass
 
@@ -67,14 +78,17 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
                 tracks += 1
 
                 try:
-                    track_widths.append(
-                        round(pcbnew.ToMM(item.GetWidth()), 3)
-                    )
+                    width = round(pcbnew.ToMM(item.GetWidth()), 3)
+                    track_widths.append(width)
+                    if width < 0.25:
+                        thin_tracks += 1
                 except:
                     pass
 
                 try:
                     layer = item.GetLayer()
+                    layer_name = board.GetLayerName(layer)
+                    layer_tracks[layer_name] = layer_tracks.get(layer_name, 0) + 1
 
                     if layer == pcbnew.F_Cu:
                         top_tracks += 1
@@ -156,14 +170,13 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
             min_via_size = 0
             max_via_size = 0
 
-        complexity_score = (
-            tracks +
-            (vias * 2) +
-            (total_nets * 3) +
-            (footprints * 2)
+        complexity_score_raw = (
+            (tracks * 0.1) +
+            (vias * 0.5) +
+            (total_nets * 1.5) +
+            (copper_layers * 5)
         )
-
-        complexity_score = min(complexity_score, 100)
+        complexity_score = min(int(complexity_score_raw), 100)
 
         health_score = self.calculate_health_score(
             tracks,
@@ -191,6 +204,14 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
         else:
             grade = "F"
             board_status = "CRITICAL"
+            
+        warnings_text = ""
+        if thin_tracks > 0:
+            warnings_text += f"- {thin_tracks} tracks below recommended width\n"
+        if small_vias > 0:
+            warnings_text += f"- {small_vias} very small vias detected\n"
+        if not warnings_text:
+            warnings_text = "- No warnings"
 
         report = f"""
 ================================
@@ -213,6 +234,7 @@ LAYER STATISTICS
 
 Top Layer Tracks   : {top_tracks}
 Bottom Layer Tracks: {bottom_tracks}
+Other Layers       : {layer_tracks}
 
 NET ANALYSIS
 --------------------------------
@@ -237,6 +259,9 @@ VIA STATISTICS
 
 Smallest Via       : {min_via_size} mm
 Largest Via        : {max_via_size} mm
+Through Vias       : {via_types.get(pcbnew.VIATYPE_THROUGH, 0)}
+Micro Vias         : {via_types.get(pcbnew.VIATYPE_MICROVIA, 0)}
+Blind/Buried Vias  : {via_types.get(pcbnew.VIATYPE_BLIND_BURIED, 0)}
 
 DRC SUMMARY
 --------------------------------
@@ -244,10 +269,17 @@ DRC SUMMARY
 Unconnected Pads   : {unconnected_pads}
 Possible Overlaps  : {overlaps}
 
-ADVANCED ANALYSIS
+DESIGN QUALITY ANALYSIS
 --------------------------------
+Min Track Width: {min_track_width} mm
+Max Track Width: {max_track_width} mm
+Average Track Width: {avg_track_width} mm
 
-Complexity Score   : {complexity_score}/100
+Via Count: {vias}
+Complexity Score: {complexity_score}/100
+
+Warnings:
+{warnings_text.strip()}
 
 HEALTH ANALYSIS
 --------------------------------
@@ -276,6 +308,25 @@ Analysis Complete
 
         with open(report_path, "w", encoding="utf-8") as f:
             f.write(report)
+            
+        stats = {
+            "health_score": health_score,
+            "grade": grade,
+            "board_status": board_status,
+            "tracks": tracks,
+            "vias": vias,
+            "footprints": footprints,
+            "total_nets": total_nets,
+            "copper_layers": copper_layers,
+            "complexity_score": complexity_score,
+            "drc_summary": {
+                "unconnected_pads": unconnected_pads,
+                "possible_overlaps": overlaps,
+                "thin_tracks_warning": thin_tracks,
+                "small_vias_warning": small_vias
+            }
+        }
+        report_generator.generate_report(stats)
 
         html_report_path = os.path.join(
             os.path.dirname(report_path),
@@ -290,7 +341,12 @@ Analysis Complete
             tracks,
             vias,
             footprints,
-            total_nets
+            total_nets,
+            min_track_width,
+            max_track_width,
+            avg_track_width,
+            complexity_score,
+            warnings_text
         )
 
         wx.MessageBox(
@@ -302,4 +358,5 @@ Analysis Complete
             f"pcb_health_report.txt\n"
             f"pcb_health_report.html",
             "OPCB Health Analyzer"
-        )
+        )
+

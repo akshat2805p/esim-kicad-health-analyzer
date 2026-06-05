@@ -142,11 +142,14 @@ The most advanced and feature-rich module. Production-ready plugin for comprehen
   - Component placement validation
   - Copper coverage metrics
 
-- 🎯 **Design Quality Inspection**
+- 🎯 **Design Quality Inspection (DRC Summary Module)**
+  - Track Width Analysis (Min/Max/Avg, flags extremely thin tracks)
+  - Via Statistics (Counts by type, identifies unusually small vias)
+  - Board Complexity Score based on tracks, vias, nets, and layers
+  - Copper Layer Utilization & Track Distribution
   - Unconnected pad detection
   - Track overlap analysis
   - Component density assessment
-  - Design rule compliance checks
 
 - 📈 **Health Scoring System**
   - Automated health score (0-100)
