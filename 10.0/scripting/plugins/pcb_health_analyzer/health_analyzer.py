@@ -1,8 +1,18 @@
+"""
+OPCB Health Analyzer — KiCad Action Plugin
+
+Main entry point for the PCB Health Analyzer plugin.
+Collects board statistics, computes health scores, runs the
+AI Review Engine and Chat Assistant, and generates all reports
+(TXT, HTML, JSON, and knowledge file).
+"""
+
 import pcbnew
 import wx
 import os
 from .pcb_html_report import generate_html_report
 from . import report_generator
+from .pcb_chat_assistant import PCBChatAssistant
 
 
 class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
@@ -10,7 +20,7 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
     def defaults(self):
         self.name = "OPCB Health Analyzer"
         self.category = "PCB Analysis"
-        self.description = "Analyzes PCB statistics and generates health report"
+        self.description = "Analyzes PCB statistics and generates AI-assisted health report"
 
     def calculate_health_score(self, tracks, vias, unconnected_pads, overlaps):
 
@@ -47,7 +57,26 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
 
         thin_tracks = 0
         small_vias = 0
-        via_types = {pcbnew.VIATYPE_THROUGH: 0, pcbnew.VIATYPE_BLIND_BURIED: 0, pcbnew.VIATYPE_MICROVIA: 0}
+
+        # Via type constants vary across KiCad versions — resolve safely
+        _VIA_THROUGH = getattr(pcbnew, 'VIATYPE_THROUGH',
+                        getattr(pcbnew, 'VIA_THROUGH', None))
+        _VIA_BLIND   = getattr(pcbnew, 'VIATYPE_BLIND_BURIED',
+                        getattr(pcbnew, 'VIA_BLIND_BURIED', None))
+        _VIA_MICRO   = getattr(pcbnew, 'VIATYPE_MICROVIA',
+                        getattr(pcbnew, 'VIA_MICROVIA', None))
+
+        via_types = {}
+        if _VIA_THROUGH is not None:
+            via_types[_VIA_THROUGH] = 0
+        if _VIA_BLIND is not None:
+            via_types[_VIA_BLIND] = 0
+        if _VIA_MICRO is not None:
+            via_types[_VIA_MICRO] = 0
+
+        through_vias_count = 0
+        micro_vias_count = 0
+        blind_vias_count = 0
         layer_tracks = {}
 
         track_widths = []
@@ -70,6 +99,13 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
                     via_type = item.GetViaType()
                     if via_type in via_types:
                         via_types[via_type] += 1
+                    # Track counts by type using resolved constants
+                    if _VIA_THROUGH is not None and via_type == _VIA_THROUGH:
+                        through_vias_count += 1
+                    elif _VIA_MICRO is not None and via_type == _VIA_MICRO:
+                        micro_vias_count += 1
+                    elif _VIA_BLIND is not None and via_type == _VIA_BLIND:
+                        blind_vias_count += 1
                 except:
                     pass
 
@@ -213,6 +249,34 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
         if not warnings_text:
             warnings_text = "- No warnings"
 
+        # ---------------------------------------------------------- #
+        #  AI PCB Knowledge Assistant integration                      #
+        # ---------------------------------------------------------- #
+
+        # Build stats dict for the AI engine
+        ai_stats = {
+            "tracks": tracks,
+            "vias": vias,
+            "health_score": health_score,
+            "unconnected_pads": unconnected_pads,
+            "drc_errors": overlaps,
+            "thin_tracks": thin_tracks,
+            "small_vias": small_vias,
+            "footprints": footprints,
+            "total_nets": total_nets,
+            "copper_layers": copper_layers,
+            "complexity_score": complexity_score,
+        }
+
+        # Run AI analysis
+        assistant = PCBChatAssistant()
+        ai_review = assistant.get_ai_review(ai_stats)
+        ai_summary = assistant.generate_response(ai_stats)
+
+        # ---------------------------------------------------------- #
+        #  Text report (original + AI summary appended)                #
+        # ---------------------------------------------------------- #
+
         report = f"""
 ================================
       PCB HEALTH REPORT
@@ -259,9 +323,9 @@ VIA STATISTICS
 
 Smallest Via       : {min_via_size} mm
 Largest Via        : {max_via_size} mm
-Through Vias       : {via_types.get(pcbnew.VIATYPE_THROUGH, 0)}
-Micro Vias         : {via_types.get(pcbnew.VIATYPE_MICROVIA, 0)}
-Blind/Buried Vias  : {via_types.get(pcbnew.VIATYPE_BLIND_BURIED, 0)}
+Through Vias       : {through_vias_count}
+Micro Vias         : {micro_vias_count}
+Blind/Buried Vias  : {blind_vias_count}
 
 DRC SUMMARY
 --------------------------------
@@ -287,6 +351,10 @@ HEALTH ANALYSIS
 Health Score       : {health_score}/100
 Health Grade       : {grade}
 Board Status       : {board_status}
+
+================================
+
+{ai_summary}
 
 ================================
 Analysis Complete
@@ -346,17 +414,39 @@ Analysis Complete
             max_track_width,
             avg_track_width,
             complexity_score,
-            warnings_text
+            warnings_text,
+            ai_review=ai_review,
         )
+
+        # ---------------------------------------------------------- #
+        #  Knowledge file export (Task 6)                              #
+        # ---------------------------------------------------------- #
+
+        output_dir = os.path.dirname(report_path) if report_path else "."
+        report_generator.generate_knowledge_file(
+            board_name=board_file,
+            stats=ai_stats,
+            ai_review=ai_review,
+            output_dir=output_dir,
+        )
+
+        # ---------------------------------------------------------- #
+        #  Completion dialog                                           #
+        # ---------------------------------------------------------- #
+
+        fab_status = ai_review.get("fabrication_status", "UNKNOWN")
+        quality_level = ai_review.get("quality_level", "")
 
         wx.MessageBox(
             f"PCB Health Report Generated Successfully!\n\n"
             f"Health Score : {health_score}/100\n"
             f"Grade        : {grade}\n"
-            f"Status       : {board_status}\n\n"
+            f"Status       : {board_status}\n"
+            f"AI Quality   : {quality_level}\n"
+            f"Fabrication  : {fab_status}\n\n"
             f"Generated Files:\n"
-            f"pcb_health_report.txt\n"
-            f"pcb_health_report.html",
+            f"  pcb_health_report.txt\n"
+            f"  pcb_health_report.html\n"
+            f"  reports/board_knowledge.json",
             "OPCB Health Analyzer"
         )
-
