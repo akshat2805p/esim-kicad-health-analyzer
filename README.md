@@ -42,6 +42,7 @@ This repository provides a complete ecosystem of KiCad plugins and Python utilit
 ✅ **Ask questions about board quality interactively**  
 ✅ **Check fabrication readiness automatically**  
 ✅ **Export structured knowledge files for future LLM integration**
+✅ **Visually highlight DRC issues directly on the PCB layout**
 
 All modules are designed to integrate seamlessly with KiCad 6.0+ and leverage the `pcbnew` Python API for native board manipulation.
 
@@ -271,6 +272,24 @@ opcb_drc_checker/
 ├── opcb_drc_checker.py      # Main plugin logic
 ├── report_generator.py      # Text report generator
 └── html_generator.py        # HTML report generator
+```
+
+---
+
+### 7. **visual_drc_inspector.py** — OPCB Visual DRC Inspector (Day 14) ⭐ (Mentor-Attention Feature)
+A KiCad Action Plugin that visually highlights potential PCB issues directly on the board instead of only generating reports. This tool acts as an **AI-like PCB Assistant** to guide routing decisions interactively.
+
+**Key Features:**
+- 🔍 **Visual Board Annotations:** Draws temporary graphic circles, warning markers, and graphical text labels near problem areas directly on the layout.
+- 🎯 **Advanced Detection:** Finds thin tracks (<0.2mm), isolated/floating vias, unconnected track segments, very short tracks (<0.1mm), and copper objects outside the board outline.
+- 🚦 **Severity Levels:** Classifies issues into `LOW`, `MEDIUM`, `HIGH`, and `CRITICAL`.
+- 🤖 **AI-like PCB Assistant:** Generates actionable design and layout recommendations based on rule-based analysis of the detected board statistics.
+- 📄 **Multi-Format Reports:** Generates `visual_inspection_report.txt` and `visual_inspection_report.html` including issue types, precise coordinates, severity, and suggested fixes.
+- 📊 **Popup Summary Window:** Displays an immediate count of all detected issues categorized by type.
+
+**Directory Structure:**
+```
+visual_drc_inspector.py      # Main plugin logic and AI Assistant rules
 ```
 
 ---
