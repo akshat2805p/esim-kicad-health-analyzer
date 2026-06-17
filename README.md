@@ -6,7 +6,7 @@
 [![AI Assisted](https://img.shields.io/badge/AI--Assisted%20Analysis-blueviolet)](.)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-A comprehensive suite of Python-based KiCad automation plugins and utilities developed for the **FOSSEE eSim** project. This repository contains production-ready tools for PCB analysis, design validation, visual DRC inspection, dependency graph generation, report generation, and an **AI-powered Knowledge Assistant** that explains issues, recommends fixes, answers questions, and assesses fabrication readiness — all seamlessly integrated with KiCad's Python API ecosystem.
+A comprehensive suite of Python-based KiCad automation plugins and utilities developed for the **eSim** . This repository contains production-ready tools for PCB analysis, design validation, visual DRC inspection, dependency graph generation, report generation, and an **AI-powered Knowledge Assistant** that explains issues, recommends fixes, answers questions, and assesses fabrication readiness — all seamlessly integrated with KiCad's Python API ecosystem.
 
 **Repository Owner:** [akshat2805p](https://github.com/akshat2805p)  
 **For:** FOSSEE eSim Open Source Contributions
