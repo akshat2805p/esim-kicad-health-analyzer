@@ -70,6 +70,13 @@ Lightweight, rapid inspection tools for baseline design validation.
 ### 5. `pcb_report_generator` & `pcb_reader.py`
 Utilities to read `.kicad_pcb` metadata programmatically and generate detailed component, footprint, and layer composition summaries.
 
+### 6. `smart_design_assistant` — Smart PCB Design Rule Assistant (AI-Based)
+An advanced plugin that automatically analyzes the PCB and provides intelligent design suggestions before running DRC.
+- Scans for thin tracks, components placed too close together, unconnected nets, excessive vias on signal paths, and silkscreen overlapping pads.
+- Computes a dynamic **PCB Warning Score** (Excellent, Good, Needs Improvement, Critical).
+- Provides an interactive GUI panel showing total warnings, health score, and top 5 recommendations.
+- Generates an **Intelligent PCB Design Recommendation Report** in HTML.
+
 ---
 
 ## 🤖 AI PCB Knowledge Assistant
@@ -172,10 +179,3 @@ Contributions from the FOSSEE community and open-source hardware enthusiasts are
 
 ---
 
-## 📞 Support & Contact
-
-- **Author:** Akshat ([akshat2805p](https://github.com/akshat2805p))
-- **Issues:** Please report any bugs via the [GitHub Issues tracker](https://github.com/akshat2805p/FOSSEE-eSim-Tasks/issues).
-
----
-*Developed for FOSSEE eSim — Bridging Open Source Hardware and AI Intelligence.*
