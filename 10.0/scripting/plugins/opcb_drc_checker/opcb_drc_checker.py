@@ -4,6 +4,17 @@ import wx
 from .report_generator import generate_text_report
 from .html_generator import generate_html_report
 
+def to_mm(val):
+    if hasattr(pcbnew, 'ToMM'):
+        return getattr(pcbnew, 'ToMM')(val)
+    return val / 1000000.0
+
+def from_mm(val):
+    if hasattr(pcbnew, 'FromMM'):
+        return getattr(pcbnew, 'FromMM')(val)
+    return int(val * 1000000.0)
+
+
 class OPCBDesignRuleChecker(pcbnew.ActionPlugin):
     def defaults(self):
         self.name = "OPCB Design Rule Checker"
@@ -37,8 +48,8 @@ class OPCBDesignRuleChecker(pcbnew.ActionPlugin):
         # 1. Board Dimension Analyzer
         try:
             bbox = board.GetBoardEdgesBoundingBox()
-            width = pcbnew.ToMM(bbox.GetWidth())
-            height = pcbnew.ToMM(bbox.GetHeight())
+            width = to_mm(bbox.GetWidth())
+            height = to_mm(bbox.GetHeight())
             report_data['board_width'] = width
             report_data['board_height'] = height
             report_data['board_area'] = width * height
@@ -64,22 +75,22 @@ class OPCBDesignRuleChecker(pcbnew.ActionPlugin):
 
             if item_type == pcbnew.PCB_TRACE_T:
                 report_data['total_tracks'] += 1
-                width_mm = pcbnew.ToMM(track.GetWidth())
+                width_mm = to_mm(track.GetWidth())
                 if width_mm < track_min_width_mm:
                     pos = track.GetPosition()
                     report_data['small_tracks'].append({
-                        'x': pcbnew.ToMM(pos.x),
-                        'y': pcbnew.ToMM(pos.y),
+                        'x': to_mm(pos.x),
+                        'y': to_mm(pos.y),
                         'width': width_mm
                     })
             elif item_type == pcbnew.PCB_VIA_T:
                 report_data['total_vias'] += 1
-                width_mm = pcbnew.ToMM(track.GetWidth())
+                width_mm = to_mm(track.GetWidth())
                 if width_mm < via_min_diameter_mm:
                     pos = track.GetPosition()
                     report_data['small_vias'].append({
-                        'x': pcbnew.ToMM(pos.x),
-                        'y': pcbnew.ToMM(pos.y),
+                        'x': to_mm(pos.x),
+                        'y': to_mm(pos.y),
                         'width': width_mm
                     })
 

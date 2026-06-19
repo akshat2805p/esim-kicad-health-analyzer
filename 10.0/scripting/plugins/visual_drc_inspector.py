@@ -2,6 +2,17 @@ import pcbnew
 import wx
 import os
 
+def to_mm(val):
+    if hasattr(pcbnew, 'ToMM'):
+        return getattr(pcbnew, 'ToMM')(val)
+    return val / 1000000.0
+
+def from_mm(val):
+    if hasattr(pcbnew, 'FromMM'):
+        return getattr(pcbnew, 'FromMM')(val)
+    return int(val * 1000000.0)
+
+
 def make_point(x, y):
     if hasattr(pcbnew, 'VECTOR2I'):
         return pcbnew.VECTOR2I(int(x), int(y))
@@ -23,8 +34,8 @@ class VisualDRCInspector(pcbnew.ActionPlugin):
         issues = []
         
         bounding_box = board.GetBoardEdgesBoundingBox()
-        track_threshold_nm = pcbnew.FromMM(0.2)
-        short_track_threshold_nm = pcbnew.FromMM(0.1)
+        track_threshold_nm = from_mm(0.2)
+        short_track_threshold_nm = from_mm(0.1)
 
         vias = [t for t in board.GetTracks() if isinstance(t, pcbnew.PCB_VIA)]
         tracks = [t for t in board.GetTracks() if isinstance(t, pcbnew.PCB_TRACK)]
@@ -108,17 +119,17 @@ class VisualDRCInspector(pcbnew.ActionPlugin):
             circle.SetShape(pcbnew.SHAPE_T_CIRCLE)
             circle.SetCenter(pos)
             # define radius by setting end point
-            circle.SetEnd(make_point(pos.x + pcbnew.FromMM(2), pos.y))
+            circle.SetEnd(make_point(pos.x + from_mm(2), pos.y))
             circle.SetLayer(pcbnew.Dwgs_User)
-            circle.SetWidth(int(pcbnew.FromMM(0.2)))
+            circle.SetWidth(int(from_mm(0.2)))
             board.Add(circle)
             
             # Draw text label
             text = pcbnew.PCB_TEXT(board)
             text.SetText(f"⚠ {issue['type']}")
-            text.SetPosition(make_point(pos.x + pcbnew.FromMM(3), pos.y))
+            text.SetPosition(make_point(pos.x + from_mm(3), pos.y))
             text.SetLayer(pcbnew.Dwgs_User)
-            text.SetTextSize(make_point(pcbnew.FromMM(1.5), pcbnew.FromMM(1.5)))
+            text.SetTextSize(make_point(from_mm(1.5), from_mm(1.5)))
             board.Add(text)
 
         # Output folder
@@ -154,7 +165,7 @@ class VisualDRCInspector(pcbnew.ActionPlugin):
             report_txt += f"{k}s: {v}\n"
         report_txt += f"\nTotal Issues: {len(issues)}\n\nDetailed Issues:\n"
         for issue in issues:
-            report_txt += f"- {issue['type']} at ({pcbnew.ToMM(issue['pos'].x):.2f}, {pcbnew.ToMM(issue['pos'].y):.2f}) mm. Severity: {issue['severity']}. Fix: {issue['fix']}\n"
+            report_txt += f"- {issue['type']} at ({to_mm(issue['pos'].x):.2f}, {to_mm(issue['pos'].y):.2f}) mm. Severity: {issue['severity']}. Fix: {issue['fix']}\n"
         
         report_txt += "\nAI Recommendation:\n\n"
         for rec in recommendations:
@@ -172,7 +183,7 @@ class VisualDRCInspector(pcbnew.ActionPlugin):
         html += "<h2>Detailed Issues</h2><table border='1' cellpadding='5' style='border-collapse: collapse;'>"
         html += "<tr style='background-color: #f2f2f2;'><th>Type</th><th>X (mm)</th><th>Y (mm)</th><th>Severity</th><th>Suggested Fix</th></tr>"
         for issue in issues:
-            html += f"<tr><td>{issue['type']}</td><td>{pcbnew.ToMM(issue['pos'].x):.2f}</td><td>{pcbnew.ToMM(issue['pos'].y):.2f}</td><td>{issue['severity']}</td><td>{issue['fix']}</td></tr>"
+            html += f"<tr><td>{issue['type']}</td><td>{to_mm(issue['pos'].x):.2f}</td><td>{to_mm(issue['pos'].y):.2f}</td><td>{issue['severity']}</td><td>{issue['fix']}</td></tr>"
         html += "</table><h2>AI Recommendation</h2><ul>"
         for rec in recommendations:
             html += f"<li>{rec}</li>"

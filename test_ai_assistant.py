@@ -70,19 +70,19 @@ print(f"\nRecommendations ({len(review['recommendations'])}):")
 for i, rec in enumerate(review["recommendations"], 1):
     print(f"  {i}. {rec}")
 
-print("\n✅ AI Review Engine — PASSED\n")
+print("\n[OK] AI Review Engine - PASSED\n")
 
 
 # ---- Test 2: PCB Chat Assistant -------------------------------------- #
 print("=" * 60)
-print("  TEST 2: PCB Chat Assistant — Full Response")
+print("  TEST 2: PCB Chat Assistant - Full Response")
 print("=" * 60)
 
 assistant = PCBChatAssistant()
 response = assistant.generate_response(board_stats)
 print(response)
 
-print("\n✅ Chat Assistant generate_response() — PASSED\n")
+print("\n[OK] Chat Assistant generate_response() - PASSED\n")
 
 
 # ---- Test 3: Interactive Q&A ----------------------------------------- #
@@ -98,11 +98,11 @@ questions = [
 ]
 
 for q in questions:
-    print(f"\n{'─' * 50}")
+    print(f"\n{'-' * 50}")
     answer = assistant.answer_question(q, board_stats)
     print(answer)
 
-print("\n✅ Interactive Q&A — PASSED\n")
+print("\n[OK] Interactive Q&A - PASSED\n")
 
 
 # ---- Test 4: Knowledge File Export ----------------------------------- #
@@ -127,7 +127,7 @@ print(f"\nKnowledge file written to: {knowledge_path}")
 print(f"\nContents:")
 print(json.dumps(knowledge, indent=2))
 
-print("\n✅ Knowledge File Export — PASSED\n")
+print("\n[OK] Knowledge File Export - PASSED\n")
 
 
 # ---- Test 5: HTML Report with AI Section ----------------------------- #
@@ -157,7 +157,7 @@ generate_html_report(
 print(f"\nHTML report written to: {html_path}")
 print(f"File size: {os.path.getsize(html_path)} bytes")
 
-print("\n✅ HTML Report with AI Section — PASSED\n")
+print("\n[OK] HTML Report with AI Section - PASSED\n")
 
 
 # ---- Test 6: Clean board (should be READY) --------------------------- #
@@ -181,12 +181,12 @@ print(f"Fab      : {clean_review['fabrication_status']}")
 print(f"Issues   : {len(clean_review['issues'])}")
 print(f"Summary  : {clean_review['summary_text']}")
 
-print("\n✅ Clean Board Test — PASSED\n")
+print("\n[OK] Clean Board Test - PASSED\n")
 
 
 # ---- Final Summary --------------------------------------------------- #
 print("=" * 60)
-print("  ALL 6 TESTS PASSED ✅")
+print("  ALL 6 TESTS PASSED [OK]")
 print("=" * 60)
 print(f"\nOutput files are in: {output_dir}")
 print("  - test_pcb_health_report.html  (open in browser to see AI section)")

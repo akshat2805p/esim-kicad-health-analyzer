@@ -2,6 +2,17 @@ import pcbnew
 import os
 import wx
 
+def to_mm(val):
+    if hasattr(pcbnew, 'ToMM'):
+        return getattr(pcbnew, 'ToMM')(val)
+    return val / 1000000.0
+
+def from_mm(val):
+    if hasattr(pcbnew, 'FromMM'):
+        return getattr(pcbnew, 'FromMM')(val)
+    return int(val * 1000000.0)
+
+
 class AdvancedPCBChecker(pcbnew.ActionPlugin):
 
     def defaults(self):
@@ -30,28 +41,28 @@ class AdvancedPCBChecker(pcbnew.ActionPlugin):
             if isinstance(item, pcbnew.PCB_TRACK):
                 total_tracks += 1
 
-                width_mm = pcbnew.ToMM(item.GetWidth())
+                width_mm = to_mm(item.GetWidth())
 
                 # Thin track check
                 if width_mm < 0.25:
                     pos = item.GetStart()
                     warnings.append(
-                        f"Thin Track at X={pcbnew.ToMM(pos.x):.2f}, "
-                        f"Y={pcbnew.ToMM(pos.y):.2f}"
+                        f"Thin Track at X={to_mm(pos.x):.2f}, "
+                        f"Y={to_mm(pos.y):.2f}"
                     )
 
             # Via count
             if isinstance(item, pcbnew.PCB_VIA):
                 total_vias += 1
 
-                drill_mm = pcbnew.ToMM(item.GetDrillValue())
+                drill_mm = to_mm(item.GetDrillValue())
 
                 # Small drill check
                 if drill_mm < 0.2:
                     pos = item.GetPosition()
                     warnings.append(
-                        f"Small Via Drill at X={pcbnew.ToMM(pos.x):.2f}, "
-                        f"Y={pcbnew.ToMM(pos.y):.2f}"
+                        f"Small Via Drill at X={to_mm(pos.x):.2f}, "
+                        f"Y={to_mm(pos.y):.2f}"
                     )
 
         # -------------------------

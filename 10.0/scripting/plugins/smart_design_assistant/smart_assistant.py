@@ -4,6 +4,17 @@ import wx
 import datetime
 from .gui import SmartAssistantGUI
 
+def to_mm(val):
+    if hasattr(pcbnew, 'ToMM'):
+        return getattr(pcbnew, 'ToMM')(val)
+    return val / 1000000.0
+
+def from_mm(val):
+    if hasattr(pcbnew, 'FromMM'):
+        return getattr(pcbnew, 'FromMM')(val)
+    return int(val * 1000000.0)
+
+
 class SmartDesignAssistantPlugin(pcbnew.ActionPlugin):
     def defaults(self):
         self.name = "Smart PCB Design Assistant"
@@ -32,7 +43,7 @@ class SmartDesignAssistantPlugin(pcbnew.ActionPlugin):
         score = 100
         
         # 1. Tracks too thin (< 0.2mm)
-        thin_track_threshold = pcbnew.FromMM(0.2)
+        thin_track_threshold = from_mm(0.2) if hasattr(pcbnew, 'FromMM') else int(0.2 * 1e6)
         tracks = board.GetTracks()
         
         thin_tracks = 0
@@ -67,7 +78,7 @@ class SmartDesignAssistantPlugin(pcbnew.ActionPlugin):
         footprints = board.GetFootprints()
         close_components = 0
         
-        inflation = pcbnew.FromMM(0.1)
+        inflation = from_mm(0.1) if hasattr(pcbnew, 'FromMM') else int(0.1 * 1e6)
         fps = []
         for fp in footprints:
             bb = fp.GetBoundingBox()
@@ -86,8 +97,15 @@ class SmartDesignAssistantPlugin(pcbnew.ActionPlugin):
 
         # 4. Unconnected nets
         connectivity = board.GetConnectivity()
-        unconnected_items = connectivity.GetUnconnectedEdges()
-        num_unconnected = len(unconnected_items)
+        if hasattr(connectivity, 'GetUnconnectedEdges'):
+            num_unconnected = len(connectivity.GetUnconnectedEdges())
+        elif hasattr(connectivity, 'GetUnconnectedCount'):
+            try:
+                num_unconnected = connectivity.GetUnconnectedCount(False)
+            except TypeError:
+                num_unconnected = connectivity.GetUnconnectedCount()
+        else:
+            num_unconnected = 0
         
         if num_unconnected > 0:
             warnings.append({"issue": f"{num_unconnected} unconnected net edges found", "severity": "Critical", "fix": "Complete routing for all unconnected nets."})

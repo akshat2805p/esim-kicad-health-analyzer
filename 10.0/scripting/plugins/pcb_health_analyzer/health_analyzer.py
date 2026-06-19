@@ -12,6 +12,17 @@ from .pcb_html_report import generate_html_report
 from . import report_generator
 from .pcb_chat_assistant import PCBChatAssistant
 
+def to_mm(val):
+    if hasattr(pcbnew, 'ToMM'):
+        return getattr(pcbnew, 'ToMM')(val)
+    return val / 1000000.0
+
+def from_mm(val):
+    if hasattr(pcbnew, 'FromMM'):
+        return getattr(pcbnew, 'FromMM')(val)
+    return int(val * 1000000.0)
+
+
 
 class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
 
@@ -82,7 +93,7 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
             if isinstance(item, pcbnew.PCB_VIA):
                 vias += 1
                 try:
-                    width = round(pcbnew.ToMM(item.GetWidth()), 3)
+                    width = round(to_mm(item.GetWidth()), 3)
                     via_sizes.append(width)
                     if width < 0.4:
                         small_vias += 1
@@ -101,7 +112,7 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
             else:
                 tracks += 1
                 try:
-                    width = round(pcbnew.ToMM(item.GetWidth()), 3)
+                    width = round(to_mm(item.GetWidth()), 3)
                     track_widths.append(width)
                     if width < 0.25:
                         thin_tracks += 1
@@ -218,8 +229,8 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
         # Board dimensions and area
         try:
             bbox = board.GetBoardEdgesBoundingBox()
-            board_width_mm = pcbnew.ToMM(bbox.GetWidth())
-            board_height_mm = pcbnew.ToMM(bbox.GetHeight())
+            board_width_mm = to_mm(bbox.GetWidth())
+            board_height_mm = to_mm(bbox.GetHeight())
             board_area_cm2 = (board_width_mm * board_height_mm) / 100.0
         except Exception:
             board_width_mm = 0.0
@@ -236,7 +247,7 @@ class OPCBHealthAnalyzer(pcbnew.ActionPlugin):
                     start = item.GetStart()
                     end = item.GetEnd()
                     length = ((start.x - end.x)**2 + (start.y - end.y)**2)**0.5
-                total_track_length_mm += pcbnew.ToMM(length)
+                total_track_length_mm += to_mm(length)
 
         layers_count = copper_layers if copper_layers > 0 else 2
         if board_area_cm2 > 0:
