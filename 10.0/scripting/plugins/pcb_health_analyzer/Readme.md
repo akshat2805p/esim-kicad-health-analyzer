@@ -112,13 +112,13 @@ The PCB Health Analyzer is a specialized KiCad plugin that automatically analyze
 
 1. **Open a PCB file** in KiCad's PCB Editor (pcbnew)
 2. **Access the plugin:**
-   - Go to `Tools → External Plugins → OPCB Health Analyzer`
-   - Or use the plugin menu in the toolbar
+   - Go to `Tools → External Plugins → PCB Design Copilot`
 
-3. **View the Report**
-   - A popup dialog shows the health score and status
-   - A detailed text report is generated in the same directory as the PCB file
-   - Report filename: `pcb_health_report.txt`
+3. **Use the Interactive Panel**
+   - A floating panel stays on top of the PCB editor showing real-time board statistics, health grade, DRC status, cost estimates, and congestion warnings.
+   - The dashboard updates automatically in the background (every 3 seconds) as you edit the board.
+   - Switch to the **AI Copilot Chat** tab to ask design questions or click predefined diagnostic questions.
+   - Click **Export PDF/HTML** inside the panel to generate `pcb_health_report.html`, `pcb_health_report.txt`, and `reports/board_knowledge.json`.
 
 ### Report Output Example
 
@@ -247,14 +247,15 @@ Output (Text & JSON Reports)
 - Output validation
 
 ### `gui.py` - User Interface Layer
-**Status:** Framework for future development
+**Status:** Fully implemented
 
-**Planned Features:**
-- Health score visualization
-- Interactive PCB inspection
-- Export options dialog
-- Risk highlighting
-- Statistical dashboard
+**Features:**
+- Color-coded health score panel (A/B/C/D/F grades).
+- Multi-metric board statistics grid (tracks layer-wise split, via types split, nets count, board area, copper layers).
+- Smart Assistant Insights (DRC Errors, Congestion Level, Cost Estimator).
+- Actionable suggestions display based on AI engine reviews.
+- Background `wx.Timer` polling for silent real-time updates.
+- Interactive AI Chat tab with scrollable HTML view logs, quick diagnostic buttons, custom question keywords matching parser.
 
 ### `__init__.py` - Plugin Registration
 Registers the `OPCBHealthAnalyzer` plugin with KiCad on import.

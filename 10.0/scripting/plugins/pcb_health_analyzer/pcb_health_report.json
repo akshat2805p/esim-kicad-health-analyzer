@@ -1,7 +1,17 @@
 {
-    "Tracks": 0,
-    "Footprints": 0,
-    "Drawings": 0,
-    "Vias": 0,
-    "Nets": 1
+    "health_score": 80,
+    "grade": "B",
+    "board_status": "GOOD",
+    "tracks": 0,
+    "vias": 0,
+    "footprints": 0,
+    "total_nets": 1,
+    "copper_layers": 2,
+    "complexity_score": 11,
+    "drc_summary": {
+        "unconnected_pads": 0,
+        "possible_overlaps": 0,
+        "thin_tracks_warning": 0,
+        "small_vias_warning": 0
+    }
 }

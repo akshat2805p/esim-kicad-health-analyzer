@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCB Health Report &mdash; AI-Assisted Analysis</title>
+    <style>
+        /* ---- Reset & base ---- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            color: #2c3e50;
+            padding: 30px 40px;
+            line-height: 1.6;
+        }
+
+        /* ---- header ---- */
+        .report-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .report-header h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        .report-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        /* ---- cards ---- */
+        .card {
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 24px 28px;
+            margin-bottom: 24px;
+        }
+        .card h2 {
+            font-size: 18px;
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        /* ---- score banner ---- */
+        .score-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .score-circle {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            color: #fff; font-weight: bold;
+            font-size: 32px;
+            background: #f39c12;
+        }
+        .score-circle small { font-size: 13px; font-weight: 400; }
+        .score-meta { text-align: center; }
+        .score-meta .grade { font-size: 38px; font-weight: 700; color: #f39c12; }
+        .score-meta .status { font-size: 14px; color: #7f8c8d; }
+
+        /* ---- tables ---- */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 8px;
+        }
+        th, td {
+            border: 1px solid #ecf0f1;
+            padding: 10px 14px;
+            text-align: left;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #7f8c8d;
+        }
+
+        /* ---- warnings ---- */
+        .warnings {
+            color: #d35400;
+            font-weight: 600;
+        }
+
+        /* ---- AI section ---- */
+        .ai-card {
+            border-left: 4px solid #3498db;
+        }
+        .ai-card h2 {
+            color: #2980b9;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .badge-ready { background: #27ae60; }
+        .badge-warning { background: #e74c3c; }
+        .issue-item {
+            background: #fef9e7;
+            border-left: 3px solid #f1c40f;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .issue-item strong { color: #e67e22; }
+        .rec-list {
+            list-style: none;
+            counter-reset: rec;
+        }
+        .rec-list li {
+            counter-increment: rec;
+            padding: 6px 0 6px 28px;
+            position: relative;
+        }
+        .rec-list li::before {
+            content: counter(rec);
+            position: absolute;
+            left: 0; top: 6px;
+            width: 20px; height: 20px;
+            background: #3498db;
+            color: #fff;
+            border-radius: 50%;
+            font-size: 11px;
+            text-align: center;
+            line-height: 20px;
+        }
+
+        /* ---- Q&A accordion ---- */
+        details {
+            margin-bottom: 8px;
+        }
+        details summary {
+            cursor: pointer;
+            padding: 8px 12px;
+            background: #eaf2f8;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #2980b9;
+            list-style: none;
+        }
+        details summary::-webkit-details-marker { display: none; }
+        details summary::before { content: "▸ "; }
+        details[open] summary::before { content: "▾ "; }
+        details .answer {
+            padding: 10px 14px;
+            color: #555;
+            border-left: 2px solid #3498db;
+            margin-top: 4px;
+        }
+
+        /* ---- fab banner ---- */
+        .fab-banner {
+            text-align: center;
+            padding: 18px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #fff;
+            background: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="report-header">
+    <h1>&#128204; PCB HEALTH REPORT</h1>
+    <p>AI-Assisted Analysis &bull; Generated by OPCB Health Analyzer</p>
+</div>
+
+<!-- Score card -->
+<div class="card">
+    <div class="score-banner">
+        <div class="score-circle">
+            70<small>/100</small>
+        </div>
+        <div class="score-meta">
+            <div class="grade">C</div>
+            <div class="status">FAIR</div>
+        </div>
+    </div>
+</div>
+
+<!-- Design Quality -->
+<div class="card">
+    <h2>&#128200; Design Quality Analysis</h2>
+    <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Min Track Width</td><td>0.2 mm</td></tr>
+        <tr><td>Max Track Width</td><td>0.5 mm</td></tr>
+        <tr><td>Average Track Width</td><td>0.35 mm</td></tr>
+        <tr><td>Via Count</td><td>60</td></tr>
+        <tr><td>Complexity Score</td><td>55/100</td></tr>
+    </table>
+    <h3 style="margin-top:14px;">Warnings</h3>
+    <p class="warnings">- 3 tracks below recommended width<br>- 2 very small vias detected</p>
+</div>
+
+<!-- General Statistics -->
+<div class="card">
+    <h2>&#128202; General Statistics</h2>
+    <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Board Status</td><td>FAIR</td></tr>
+        <tr><td>Total Tracks</td><td>120</td></tr>
+        <tr><td>Total Vias</td><td>60</td></tr>
+        <tr><td>Total Components</td><td>25</td></tr>
+        <tr><td>Total Nets</td><td>45</td></tr>
+    </table>
+</div>
+
+<!-- AI PCB Assistant (Task 5) -->
+
+<div class="card ai-card">
+    <h2>&#129302; AI PCB Assistant</h2>
+
+    <h3>Overall Assessment</h3>
+    <p style="font-size:16px;font-weight:600;margin-bottom:14px;">Moderate Quality</p>
+
+    <h3>Major Issues</h3>
+    <div class="issue-item"><strong>Unconnected Pads</strong><br>8 unconnected pad(s) detected. Unconnected pads may result in open circuits and board malfunction. Every pad should be connected to its intended net before fabrication.</div>
+<div class="issue-item"><strong>DRC Violations</strong><br>5 DRC violation(s) detected. DRC violations indicate that the design may fail manufacturing constraints such as minimum clearance, minimum annular ring, or track spacing rules.</div>
+<div class="issue-item"><strong>High Via Density</strong><br>Via count (60) exceeds 40% of track count (120). High via density may increase manufacturing complexity, raise production costs, and degrade signal integrity due to additional layer transitions.</div>
+<div class="issue-item"><strong>Thin Tracks Detected</strong><br>3 track(s) below recommended minimum width (< 0.25 mm). Thin tracks can cause signal integrity issues and may not survive the etching process during manufacturing.</div>
+<div class="issue-item"><strong>Small Via Drill Sizes</strong><br>2 via(s) with drill size below 0.4 mm. Very small vias increase drilling difficulty and may lead to unreliable barrel plating.</div>
+
+    <h3 style="margin-top:18px;">Recommendations</h3>
+    <ol class="rec-list"><li>Run DRC (Design Rule Check) and fix all violations before fabrication.</li>
+<li>Review the netlist and ensure every pad is connected to its intended net. Use the ratsnest display to locate open connections.</li>
+<li>Reduce unnecessary layer transitions by optimising trace routing. Consider re-routing critical nets on fewer layers.</li>
+<li>Increase track widths to at least 0.25 mm (10 mil). Use wider tracks for power nets to improve current-carrying capacity.</li>
+<li>Increase via drill sizes to at least 0.4 mm to improve manufacturing yield and reliability.</li>
+<li>Review power and ground routing for adequate copper width.</li>
+<li>Perform a final visual inspection of the board layout before generating Gerber files.</li></ol>
+
+    <h3 style="margin-top:18px;">Fabrication Readiness</h3>
+    <p><span class="badge badge-warning">NEEDS IMPROVEMENT</span></p>
+    <p style="margin-top:6px;color:#555;">The board is not ready for fabrication due to: 5 DRC violation(s); 8 unconnected pad(s). Fix these issues and re-run the analysis.</p>
+
+    <div class="fab-banner">NEEDS IMPROVEMENT</div>
+
+    <h3 style="margin-top:24px;">&#128172; Interactive Q&amp;A</h3>
+    <details><summary>Why is my health score low?</summary><div class="answer">The score is reduced due to:<ul><li>Unconnected Pads</li><li>DRC Violations</li><li>High Via Density</li><li>Thin Tracks Detected</li><li>Small Via Drill Sizes</li></ul></div></details>
+<details><summary>What are the major issues?</summary><div class="answer"><ul><li><strong>Unconnected Pads</strong> — 8 unconnected pad(s) detected. Unconnected pads may result in open circuits and board malfunction. Every pad should be connected to its intended net before fabrication.</li><li><strong>DRC Violations</strong> — 5 DRC violation(s) detected. DRC violations indicate that the design may fail manufacturing constraints such as minimum clearance, minimum annular ring, or track spacing rules.</li><li><strong>High Via Density</strong> — Via count (60) exceeds 40% of track count (120). High via density may increase manufacturing complexity, raise production costs, and degrade signal integrity due to additional layer transitions.</li><li><strong>Thin Tracks Detected</strong> — 3 track(s) below recommended minimum width (< 0.25 mm). Thin tracks can cause signal integrity issues and may not survive the etching process during manufacturing.</li><li><strong>Small Via Drill Sizes</strong> — 2 via(s) with drill size below 0.4 mm. Very small vias increase drilling difficulty and may lead to unreliable barrel plating.</li></ul></div></details>
+<details><summary>How can I improve the board?</summary><div class="answer"><ol><li>Run DRC (Design Rule Check) and fix all violations before fabrication.</li><li>Review the netlist and ensure every pad is connected to its intended net. Use the ratsnest display to locate open connections.</li><li>Reduce unnecessary layer transitions by optimising trace routing. Consider re-routing critical nets on fewer layers.</li><li>Increase track widths to at least 0.25 mm (10 mil). Use wider tracks for power nets to improve current-carrying capacity.</li><li>Increase via drill sizes to at least 0.4 mm to improve manufacturing yield and reliability.</li><li>Review power and ground routing for adequate copper width.</li><li>Perform a final visual inspection of the board layout before generating Gerber files.</li></ol></div></details>
+<details><summary>Is this board ready for fabrication?</summary><div class="answer"><strong>NEEDS IMPROVEMENT</strong><br>The board is not ready for fabrication due to: 5 DRC violation(s); 8 unconnected pad(s). Fix these issues and re-run the analysis.</div></details>
+</div>
+
+
+</body>
+</html>

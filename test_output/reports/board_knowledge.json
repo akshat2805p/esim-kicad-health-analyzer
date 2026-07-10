@@ -1,0 +1,68 @@
+{
+  "board_name": "test_board.kicad_pcb",
+  "health_score": 70,
+  "grade": "",
+  "board_status": "",
+  "quality_level": "Moderate Quality",
+  "fabrication_status": "NEEDS IMPROVEMENT",
+  "issues": [
+    "unconnected_pads",
+    "drc_violations",
+    "high_via_density",
+    "thin_tracks_detected",
+    "small_via_drill_sizes"
+  ],
+  "recommendations": [
+    "run_drc",
+    "reduce_layer_transitions",
+    "complete_routing",
+    "increase_track_width",
+    "review_power_routing",
+    "reduce_vias",
+    "increase_via_drill",
+    "final_visual_inspection"
+  ],
+  "statistics": {
+    "tracks": 120,
+    "vias": 60,
+    "footprints": 0,
+    "total_nets": 0,
+    "copper_layers": 0,
+    "complexity_score": 0
+  },
+  "ai_review": {
+    "summary": "The board scores 70/100 — Moderate Quality. 5 issue(s) require attention before fabrication.",
+    "issues_detail": [
+      {
+        "title": "Unconnected Pads",
+        "explanation": "8 unconnected pad(s) detected. Unconnected pads may result in open circuits and board malfunction. Every pad should be connected to its intended net before fabrication."
+      },
+      {
+        "title": "DRC Violations",
+        "explanation": "5 DRC violation(s) detected. DRC violations indicate that the design may fail manufacturing constraints such as minimum clearance, minimum annular ring, or track spacing rules."
+      },
+      {
+        "title": "High Via Density",
+        "explanation": "Via count (60) exceeds 40% of track count (120). High via density may increase manufacturing complexity, raise production costs, and degrade signal integrity due to additional layer transitions."
+      },
+      {
+        "title": "Thin Tracks Detected",
+        "explanation": "3 track(s) below recommended minimum width (< 0.25 mm). Thin tracks can cause signal integrity issues and may not survive the etching process during manufacturing."
+      },
+      {
+        "title": "Small Via Drill Sizes",
+        "explanation": "2 via(s) with drill size below 0.4 mm. Very small vias increase drilling difficulty and may lead to unreliable barrel plating."
+      }
+    ],
+    "recommendations_detail": [
+      "Run DRC (Design Rule Check) and fix all violations before fabrication.",
+      "Review the netlist and ensure every pad is connected to its intended net. Use the ratsnest display to locate open connections.",
+      "Reduce unnecessary layer transitions by optimising trace routing. Consider re-routing critical nets on fewer layers.",
+      "Increase track widths to at least 0.25 mm (10 mil). Use wider tracks for power nets to improve current-carrying capacity.",
+      "Increase via drill sizes to at least 0.4 mm to improve manufacturing yield and reliability.",
+      "Review power and ground routing for adequate copper width.",
+      "Perform a final visual inspection of the board layout before generating Gerber files."
+    ],
+    "fabrication_details": "The board is not ready for fabrication due to: 5 DRC violation(s); 8 unconnected pad(s). Fix these issues and re-run the analysis."
+  }
+}
